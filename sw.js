@@ -3,11 +3,11 @@
 // 快取規則：
 //   - 本站檔案（HTML、CSS、JS、圖示）：先上網拿最新版，失敗才用快取。更新程式後重新整理就生效。
 //   - CDN 程式庫（固定版本）：先用快取，沒有才下載。版本號寫死，內容不會變。
-//   - Supabase（資料、登入）：一律不快取。董事長行程是機密資料，不能留在手機快取裡。
+//   - Supabase（資料）：一律不快取，每次都顯示最新的報修與行程，也不在手機留下資料。
 //
 // 改了要預先快取的檔案清單時，把 CACHE_VERSION 加 1，舊快取會在啟用時清掉。
 
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const CACHE_NAME = "sc31-" + CACHE_VERSION;
 
 const PRECACHE = [
