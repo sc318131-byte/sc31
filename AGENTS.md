@@ -6,6 +6,8 @@ This project currently contains `報修需求筆記.txt`, the Traditional Chines
 
 `文件/報修欄位表.xlsx` holds the field reference (sheet 「欄位」) and ten fictional sample records with drop-down lists (sheet 「範例資料」). Items the note leaves open are marked 「待確認」.
 
+`supabase/schema.sql` creates the `repair_requests` table with column grants, RLS policies, and CHECK constraints. Run it once in the Supabase SQL Editor of a fresh project; it has not been executed from this repository.
+
 Planned deliverables include a submission form and report list, a Supabase table with access rules, an Excel field reference with sample data, a six-slide proposal, and a Word operating guide. When adding files, group application code, database scripts, documentation, and sample data into clearly named directories, and update this guide with their actual locations.
 
 ## Build, Test, and Development Commands
