@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="robots" content="noindex, nofollow">
+  <title>董事長行程</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="schedule.css">
+</head>
+<body>
+  <header class="site-header">
+    <h1>董事長行程</h1>
+    <p class="subtitle">登入後可查看與安排行程；開始前會用 LINE 提醒管理者。</p>
+  </header>
+
+  <main>
+    <!-- 登入 -->
+    <section id="login-view" class="card" aria-labelledby="login-title" hidden>
+      <h2 id="login-title">登入</h2>
+      <form id="login-form" novalidate>
+        <div class="field">
+          <label for="login-email">電子郵件</label>
+          <input id="login-email" name="email" type="email" required autocomplete="username" inputmode="email">
+        </div>
+        <div class="field">
+          <label for="login-password">密碼</label>
+          <input id="login-password" name="password" type="password" required autocomplete="current-password">
+        </div>
+        <div id="login-message" class="message" role="status" aria-live="polite" hidden></div>
+        <button id="login-btn" type="submit">登入</button>
+      </form>
+      <p class="note">帳號由管理者建立，不開放自行註冊。</p>
+    </section>
+
+    <!-- 日曆 -->
+    <section id="calendar-view" class="card" aria-labelledby="cal-title" hidden>
+      <div class="list-head">
+        <h2 id="cal-title">行程日曆</h2>
+        <div class="toolbar">
+          <button id="add-btn" type="button">新增行程</button>
+          <button id="logout-btn" type="button" class="secondary">登出</button>
+        </div>
+      </div>
+      <p class="who">已登入：<span id="who-email"></span></p>
+      <div id="cal-message" class="message" role="status" aria-live="polite" hidden></div>
+      <div id="calendar"></div>
+      <ul class="status-legend" aria-label="狀態圖例">
+        <li><span class="swatch s-planned"></span>預定</li>
+        <li><span class="swatch s-done"></span>已完成</li>
+        <li><span class="swatch s-cancel"></span>已取消</li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- 新增／編輯行程 -->
+  <dialog id="event-dialog" aria-labelledby="dialog-title">
+    <form id="event-form" method="dialog" novalidate>
+      <h2 id="dialog-title">新增行程</h2>
+
+      <div class="field">
+        <label for="ev-title">行程名稱 <span class="req" aria-hidden="true">*</span></label>
+        <input id="ev-title" name="title" type="text" required maxlength="100" placeholder="例：拜訪示範公司">
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="ev-start">開始 <span class="req" aria-hidden="true">*</span></label>
+          <input id="ev-start" name="start_at" type="datetime-local" required>
+        </div>
+        <div class="field">
+          <label for="ev-end">結束</label>
+          <input id="ev-end" name="end_at" type="datetime-local">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="ev-location">地點</label>
+        <input id="ev-location" name="location" type="text" maxlength="100" placeholder="例：台中總公司 5F 會議室">
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="ev-remind">LINE 提醒</label>
+          <select id="ev-remind" name="remind_minutes">
+            <option value="">不提醒</option>
+            <option value="0">開始時</option>
+            <option value="10">10 分鐘前</option>
+            <option value="30" selected>30 分鐘前</option>
+            <option value="60">1 小時前</option>
+            <option value="120">2 小時前</option>
+            <option value="1440">1 天前</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="ev-status">狀態</label>
+          <select id="ev-status" name="status">
+            <option value="預定" selected>預定</option>
+            <option value="已完成">已完成</option>
+            <option value="已取消">已取消</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="ev-note">備註</label>
+        <textarea id="ev-note" name="note" rows="3" maxlength="1000"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="ev-report">回報說明</label>
+        <textarea id="ev-report" name="report" rows="3" maxlength="1000" placeholder="行程結束後填寫結果，例如：已完成，簽約延到下週"></textarea>
+      </div>
+
+      <p id="remind-state" class="note" hidden></p>
+      <div id="dialog-message" class="message" role="status" aria-live="polite" hidden></div>
+
+      <div class="dialog-actions">
+        <button id="delete-btn" type="button" class="danger" hidden>刪除</button>
+        <span class="spacer"></span>
+        <button id="cancel-btn" type="button" class="secondary">取消</button>
+        <button id="save-btn" type="submit">儲存</button>
+      </div>
+    </form>
+  </dialog>
+
+  <footer class="site-footer"><a href="./">報修登記</a>・董事長行程</footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/locales/zh-tw.global.min.js"></script>
+  <script src="config.js"></script>
+  <script src="schedule.js"></script>
+</body>
+</html>
