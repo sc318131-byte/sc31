@@ -3,3 +3,4 @@
 雲端任務測試
 欄位定義與範例資料：[報修欄位表（Excel）](文件/報修欄位表.xlsx)
 網頁：[報修登記](https://sc318131-byte.github.io/sc31/)
+董事長行程：[行程日曆](https://sc318131-byte.github.io/sc31/schedule.html)（需登入，設定方式見 [行程系統設定說明](文件/行程系統設定說明.md)）

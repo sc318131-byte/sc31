@@ -1,0 +1,98 @@
+/* 董事長行程：沿用 style.css 的色彩變數，只補日曆、對話框與狀態顏色 */
+
+:root {
+  --planned: #2f5aa8;
+  --done: #4b7a5a;
+  --cancel: #9ca3af;
+  --danger: #b42318;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --planned: #5b8def;
+    --done: #86c79a;
+    --cancel: #6b7280;
+    --danger: #f87171;
+  }
+}
+
+main { max-width: 1000px; }
+.site-header, .site-footer { max-width: 1000px; }
+
+.toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
+.toolbar button { min-height: 40px; padding: 8px 14px; }
+.who { margin: -4px 0 12px; color: var(--muted); font-size: 0.9rem; overflow-wrap: anywhere; }
+
+input[type="email"], input[type="password"], input[type="datetime-local"] {
+  width: 100%;
+  font: inherit;
+  font-size: 16px;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  min-height: 44px;
+}
+
+button.danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+button.danger.confirm { background: var(--danger); color: #fff; }
+
+.site-footer a { color: inherit; }
+
+/* ---- FullCalendar 配色跟著主題 ---- */
+#calendar {
+  --fc-border-color: var(--border);
+  --fc-page-bg-color: var(--card);
+  --fc-neutral-bg-color: var(--bg);
+  --fc-list-event-hover-bg-color: var(--bg);
+  --fc-today-bg-color: color-mix(in srgb, var(--primary) 12%, transparent);
+  --fc-button-bg-color: var(--card);
+  --fc-button-border-color: var(--border);
+  --fc-button-text-color: var(--text);
+  --fc-button-hover-bg-color: var(--bg);
+  --fc-button-hover-border-color: var(--border);
+  --fc-button-active-bg-color: var(--primary);
+  --fc-button-active-border-color: var(--primary);
+  --fc-event-text-color: #fff;
+  font-size: 0.92rem;
+}
+#calendar .fc-button { min-height: 40px; font-weight: 600; box-shadow: none; }
+#calendar .fc-button-active { color: var(--primary-text); }
+#calendar .fc-toolbar-title { font-size: 1.15rem; }
+#calendar .fc-event { cursor: pointer; }
+#calendar .fc-col-header-cell-cushion,
+#calendar .fc-daygrid-day-number,
+#calendar .fc-list-day-text,
+#calendar .fc-list-day-side-text { color: var(--text); text-decoration: none; }
+#calendar .fc-list-event-title, #calendar .fc-list-event-time { color: var(--text); }
+#calendar .ev-cancel .fc-event-title, #calendar .ev-cancel .fc-list-event-title { text-decoration: line-through; }
+
+@media (max-width: 559px) {
+  #calendar .fc-header-toolbar { flex-direction: column; gap: 8px; align-items: stretch; }
+  #calendar .fc-toolbar-chunk { display: flex; justify-content: center; }
+}
+
+.status-legend { display: flex; gap: 16px; list-style: none; padding: 0; margin: 12px 0 0; color: var(--muted); font-size: 0.85rem; }
+.status-legend li { display: inline-flex; align-items: center; gap: 6px; }
+.swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.s-planned { background: var(--planned); }
+.s-done { background: var(--done); }
+.s-cancel { background: var(--cancel); }
+
+/* ---- 對話框 ---- */
+dialog {
+  width: min(560px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0;
+  background: var(--card);
+  color: var(--text);
+}
+dialog::backdrop { background: rgb(0 0 0 / 0.45); }
+#event-form { padding: 18px; }
+#event-form h2 { margin: 0 0 12px; font-size: 1.2rem; }
+/* 按鈕列固定在對話框底部；bottom 抵銷表單的下內距，下內距補回讓按鈕完整露出 */
+.dialog-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; position: sticky; bottom: -18px; background: var(--card); padding: 12px 0 18px; margin-bottom: -18px; border-top: 1px solid var(--border); }
+.dialog-actions .spacer { flex: 1; }
+.dialog-actions button { min-width: 88px; }
