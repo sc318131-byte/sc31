@@ -4,6 +4,8 @@
 
 This project currently contains `報修需求筆記.txt`, the Traditional Chinese requirements for a small repair and issue registration demo. There are no application sources, tests, assets, dependency manifests, or build scripts yet. Read the note before implementing features.
 
+`文件/報修欄位表.xlsx` holds the field reference (sheet 「欄位」) and ten fictional sample records with drop-down lists (sheet 「範例資料」). Items the note leaves open are marked 「待確認」.
+
 Planned deliverables include a submission form and report list, a Supabase table with access rules, an Excel field reference with sample data, a six-slide proposal, and a Word operating guide. When adding files, group application code, database scripts, documentation, and sample data into clearly named directories, and update this guide with their actual locations.
 
 ## Build, Test, and Development Commands
