@@ -62,6 +62,12 @@ body {
 .site-header h1 { margin: 0; font-size: 1.6rem; }
 .subtitle { margin: 4px 0 16px; color: var(--muted); }
 
+/* 安裝 App：瀏覽器允許安裝時才出現 */
+.install { margin: -8px 0 16px; }
+.install:has(> [hidden] + [hidden]) { display: none; }
+.install button { min-height: 36px; padding: 6px 12px; }
+.install .note { margin: 0; }
+
 .card {
   background: var(--card);
   border: 1px solid var(--border);

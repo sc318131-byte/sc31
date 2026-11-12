@@ -5,12 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <title>報修登記</title>
+  <meta name="theme-color" content="#2f5aa8">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="報修登記">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="manifest-repair.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/repair-192.png">
+  <link rel="apple-touch-icon" href="icons/repair-apple-180.png">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="site-header">
     <h1>報修登記</h1>
     <p class="subtitle">填寫下方表單送出報修，送出後會出現在清單中。</p>
+    <div class="install">
+      <button id="install-btn" type="button" class="secondary" hidden>安裝 App</button>
+      <p id="install-tip" class="note" hidden></p>
+    </div>
   </header>
 
   <main>
@@ -82,5 +94,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
   <script src="config.js"></script>
   <script src="app.js"></script>
+  <script src="pwa.js"></script>
 </body>
 </html>
