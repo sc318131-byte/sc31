@@ -4,38 +4,19 @@
   --planned: #2f5aa8;
   --done: #4b7a5a;
   --cancel: #9ca3af;
-  --danger: #b42318;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --planned: #5b8def;
     --done: #86c79a;
     --cancel: #6b7280;
-    --danger: #f87171;
   }
 }
 
 main { max-width: 1000px; }
 .site-header, .site-footer { max-width: 1000px; }
 
-.toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
-.toolbar button { min-height: 40px; padding: 8px 14px; }
-.who { margin: -4px 0 12px; color: var(--muted); font-size: 0.9rem; overflow-wrap: anywhere; }
-
-input[type="email"], input[type="password"], input[type="datetime-local"] {
-  width: 100%;
-  font: inherit;
-  font-size: 16px;
-  color: var(--text);
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 12px;
-  min-height: 44px;
-}
-
-button.danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
-button.danger.confirm { background: var(--danger); color: #fff; }
+.view-only { margin: 8px 0 0; }
 
 .site-footer a { color: inherit; }
 
@@ -90,8 +71,18 @@ dialog {
   color: var(--text);
 }
 dialog::backdrop { background: rgb(0 0 0 / 0.45); }
-#event-form { padding: 18px; }
-#event-form h2 { margin: 0 0 12px; font-size: 1.2rem; }
+.dialog-body { padding: 18px; }
+.dialog-body h2 { margin: 0 0 12px; font-size: 1.2rem; overflow-wrap: anywhere; }
+
+/* 詳細內容：標籤在左、內容在右；手機改上下排列 */
+.detail { display: grid; grid-template-columns: 5.5em minmax(0, 1fr); gap: 10px 12px; margin: 0 0 16px; }
+.detail dt { color: var(--muted); font-weight: 600; }
+.detail dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.detail dd.empty { color: var(--muted); }
+@media (max-width: 400px) {
+  .detail { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .detail dd { margin-bottom: 10px; }
+}
 /* 按鈕列固定在對話框底部；bottom 抵銷表單的下內距，下內距補回讓按鈕完整露出 */
 .dialog-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; position: sticky; bottom: -18px; background: var(--card); padding: 12px 0 18px; margin-bottom: -18px; border-top: 1px solid var(--border); }
 .dialog-actions .spacer { flex: 1; }

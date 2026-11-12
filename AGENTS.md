@@ -10,9 +10,10 @@ This project currently contains `報修需求筆記.txt`, the Traditional Chines
 
 The web front end lives at the repository root: `index.html` (form and list), `style.css` (mobile-first layout), `app.js` (validation, insert without `status`, newest 20 records), and `config.js` (public Supabase URL and publishable key only; never a secret or service_role key). supabase-js v2 is pinned to 2.45.4 from jsDelivr. GitHub Pages serves `index.html` from the `main` branch root.
 
-The chairman schedule system is separate from the public repair demo and requires login:
-- `schedule.html`, `schedule.js`, `schedule.css`: FullCalendar 6.1.15 calendar (jsDelivr) with email/password sign-in; phones open in list view.
-- `supabase/schedule.sql`: `chairman_events` and `schedule_editors`. No anon access; only signed-in users listed in `schedule_editors` may read or write. `reminded_at` is written only by `service_role`.
+The chairman schedule system is a public, read-only calendar with no login (the owner chose this; do not add write access from the web page without asking):
+- `schedule.html`, `schedule.js`, `schedule.css`: FullCalendar 6.1.15 calendar (jsDelivr) with a read-only detail dialog; phones open in list view.
+- `supabase/schedule.sql`: `chairman_events`. anon may select only `id, title, start_at, end_at, location, note, status, report`; there are no insert, update, or delete grants or policies. Schedules are edited in the Supabase Table Editor. `reminded_at` is written only by `service_role`.
+- `supabase/schedule-public-read.sql`: one-time migration for projects that ran the earlier login-based `schedule.sql`.
 - `supabase/functions/line-reminder/index.ts`: Edge Function (deploy with JWT verification off) that pushes LINE Messaging API reminders to one admin; it authenticates callers with the `x-cron-secret` header.
 - `supabase/cron.sql`: pg_cron job calling the function every 5 minutes, with URL and secret read from Vault. Replace its placeholders only in the SQL Editor, never in the committed file.
 - `文件/行程系統設定說明.md`: Traditional Chinese setup guide (LINE channel, accounts, secrets, deployment, troubleshooting).
@@ -42,4 +43,4 @@ This directory currently has no Git metadata, so no historical commit convention
 
 ## Security & Unresolved Requirements
 
-Enable Supabase row-level security. The current demo permits public inserts and reads, while updates and deletes remain prohibited. Never expose privileged Supabase credentials in frontend code or committed files. For the repair demo, login, status-update ownership, and notifications remain undecided; clarify these before expanding its access. The chairman schedule uses login plus the `schedule_editors` allow list, and sends LINE reminders to a single admin. LINE tokens, `CRON_SECRET`, and the service_role key live only in Supabase secrets or Vault.
+Enable Supabase row-level security. The current demo permits public inserts and reads, while updates and deletes remain prohibited. Never expose privileged Supabase credentials in frontend code or committed files. For the repair demo, login, status-update ownership, and notifications remain undecided; clarify these before expanding its access. The chairman schedule is publicly readable without login, is edited only in the Supabase dashboard, and sends LINE reminders to a single admin. LINE tokens, `CRON_SECRET`, and the service_role key live only in Supabase secrets or Vault.

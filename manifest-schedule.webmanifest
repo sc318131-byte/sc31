@@ -2,7 +2,7 @@
   "id": "./schedule.html",
   "name": "董事長行程",
   "short_name": "董事長行程",
-  "description": "查看與安排董事長行程，開始前用 LINE 提醒。",
+  "description": "查看董事長行程，開始前用 LINE 提醒管理者。",
   "lang": "zh-Hant-TW",
   "start_url": "./schedule.html",
   "scope": "./",

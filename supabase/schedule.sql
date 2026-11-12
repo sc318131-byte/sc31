@@ -1,53 +1,25 @@
 -- =====================================================================
 -- 董事長行程系統：Supabase 建表 SQL
--- 資料表：public.schedule_editors、public.chairman_events
+-- 資料表：public.chairman_events
 --
--- 用途：董事長的行程屬於機密，只有登入且列在 schedule_editors 名單裡的帳號
---       可以查看、新增、修改、刪除。未登入的訪客（anon）完全看不到。
+-- 用途：任何人打開日曆網頁就能查看董事長行程（不用登入），
+--       但網頁上不能新增、修改、刪除。行程由管理者在 Supabase 後台的
+--       Table Editor 維護（後台使用資料表擁有者身分，不受下方限制）。
 --       行程開始前，由排程（supabase/cron.sql）呼叫 Edge Function
 --       line-reminder，用 LINE 通知管理者。
 --
+-- 注意：行程對外公開，知道網址的人都看得到名稱、時間、地點、備註與回報說明。
+--       不要在備註或回報說明寫入不能公開的內容。
+--
 -- 使用方式：在 Supabase 的 SQL Editor 貼上整份檔案執行一次。
 --   整份包在同一個交易裡，任何一步失敗都會全部復原。
---   執行後，到 Authentication 建立帳號，再把帳號加進 schedule_editors（見檔案最後）。
+--   已經執行過舊版（需要登入的版本）的專案，改執行 supabase/schedule-public-read.sql。
 -- =====================================================================
 
 begin;
 
 -- ---------------------------------------------------------------------
--- 一、可編輯名單
---
--- 只有列在這張表裡的登入帳號，才能存取行程。
--- 名單本身只能由資料庫管理者在 SQL Editor 或後台維護，前端不能修改。
--- ---------------------------------------------------------------------
-create table public.schedule_editors (
-  user_id    uuid primary key references auth.users (id) on delete cascade,
-  note       text check (note is null or char_length(note) <= 50),
-  created_at timestamptz not null default now()
-);
-
-comment on table public.schedule_editors is '可以查看與編輯董事長行程的帳號名單';
-
--- 判斷目前登入的使用者是否在名單內。
--- security definer：讓 RLS 政策能查名單，又不必開放名單給前端讀取。
--- search_path 設為空字串，避免被同名物件劫持。
-create function public.is_schedule_editor()
-returns boolean
-language sql
-stable
-security definer
-set search_path = ''
-as $$
-  select exists (
-    select 1 from public.schedule_editors e where e.user_id = auth.uid()
-  );
-$$;
-
-revoke all on function public.is_schedule_editor() from public, anon;
-grant execute on function public.is_schedule_editor() to authenticated;
-
--- ---------------------------------------------------------------------
--- 二、行程資料表與 CHECK 限制
+-- 一、行程資料表與 CHECK 限制
 --
 -- 時間一律存成 timestamptz（含時區），畫面與 LINE 通知以台北時間顯示。
 -- 狀態：預定／已完成／已取消。只有「預定」的行程會發提醒。
@@ -94,8 +66,7 @@ create table public.chairman_events (
   -- 提醒已發送的時間（系統使用）
   reminded_at    timestamptz,
 
-  -- 建立者與時間（系統自動填入）
-  created_by     uuid        default auth.uid() references auth.users (id) on delete set null,
+  -- 建立與更新時間（系統自動填入）
   created_at     timestamptz not null default now(),
   updated_at     timestamptz not null default now()
 );
@@ -120,10 +91,10 @@ create index chairman_events_pending_reminder_idx
   where reminded_at is null and remind_minutes is not null and status = '預定';
 
 -- ---------------------------------------------------------------------
--- 三、觸發器：更新時間、改時間後重新提醒
+-- 二、觸發器：更新時間、改時間後重新提醒
 --
--- 行程的開始時間或提醒設定被修改時，清掉 reminded_at，
--- 讓新的時間點能再發一次提醒。前端也不能自己改 reminded_at。
+-- 行程的開始時間或提醒設定被修改時（包括在後台修改），清掉 reminded_at，
+-- 讓新的時間點能再發一次提醒。
 -- ---------------------------------------------------------------------
 create function public.chairman_events_before_write()
 returns trigger
@@ -147,65 +118,41 @@ create trigger chairman_events_before_write
   for each row execute function public.chairman_events_before_write();
 
 -- ---------------------------------------------------------------------
--- 四、GRANT 權限
+-- 三、GRANT 權限
 --
 -- 這個 Supabase 專案不會自動開放新資料表，所以要明確授權。
--- anon（未登入）：完全沒有權限。
--- authenticated（已登入）：可讀寫行程，但實際能不能存取由下方 RLS 名單決定。
---   不開放寫入 id、reminded_at、created_by、created_at、updated_at。
+-- anon（未登入的訪客）：只能讀取日曆需要的欄位，不給新增、修改、刪除。
+--   提醒設定（remind_minutes、reminded_at）與建立時間不對外開放。
+-- authenticated：本系統不使用登入，不給任何權限。
 -- service_role（Edge Function 用）：讀取行程、寫入 reminded_at。
 --   service_role 會略過 RLS，金鑰只存在 Supabase 伺服器端，絕對不能放進前端。
 -- ---------------------------------------------------------------------
-revoke all on table public.schedule_editors from public, anon, authenticated;
-revoke all on table public.chairman_events  from public, anon, authenticated;
+revoke all on table public.chairman_events from public, anon, authenticated;
 
-grant select on table public.chairman_events to authenticated;
-grant insert (title, start_at, end_at, location, note, status, report, remind_minutes)
-  on table public.chairman_events to authenticated;
-grant update (title, start_at, end_at, location, note, status, report, remind_minutes)
-  on table public.chairman_events to authenticated;
-grant delete on table public.chairman_events to authenticated;
+grant select (id, title, start_at, end_at, location, note, status, report)
+  on table public.chairman_events to anon;
 
 grant select on table public.chairman_events to service_role;
 grant update (reminded_at) on table public.chairman_events to service_role;
 
 -- ---------------------------------------------------------------------
--- 五、資料列安全 RLS
+-- 四、資料列安全 RLS
 --
--- 兩張表都啟用 RLS。
--- schedule_editors 沒有任何政策，前端讀寫一律拒絕。
--- chairman_events 只允許名單內的登入帳號操作。
+-- 啟用 RLS 後，沒有政策允許的動作一律拒絕。
+-- 只建立一條「任何人可讀取」的政策；沒有新增、修改、刪除的政策，
+-- 所以就算日後誤給了寫入權限，網頁也改不到任何資料。
 -- ---------------------------------------------------------------------
-alter table public.schedule_editors enable row level security;
-alter table public.chairman_events  enable row level security;
+alter table public.chairman_events enable row level security;
 
-create policy "名單內帳號可查看行程"
-  on public.chairman_events for select to authenticated
-  using ((select public.is_schedule_editor()));
-
-create policy "名單內帳號可新增行程"
-  on public.chairman_events for insert to authenticated
-  with check ((select public.is_schedule_editor()));
-
-create policy "名單內帳號可修改行程"
-  on public.chairman_events for update to authenticated
-  using ((select public.is_schedule_editor()))
-  with check ((select public.is_schedule_editor()));
-
-create policy "名單內帳號可刪除行程"
-  on public.chairman_events for delete to authenticated
-  using ((select public.is_schedule_editor()));
+create policy "任何人可查看行程"
+  on public.chairman_events for select to anon
+  using (true);
 
 commit;
 
 -- =====================================================================
--- 執行完上面之後，手動把帳號加進名單（不在交易內，可以分開執行）：
---
--- 1. 到 Authentication → Users → Add user 建立帳號（例如秘書、董事長）。
--- 2. 到 Authentication → Sign In / Providers，關閉「Allow new users to sign up」，
---    避免陌生人自行註冊。
--- 3. 把下面的 email 換成剛建立的帳號，再執行：
---
--- insert into public.schedule_editors (user_id, note)
--- select id, '秘書' from auth.users where email = 'secretary@example.com';
+-- 新增或修改行程：
+--   Supabase 後台 → Table Editor → chairman_events → Insert row（或點兩下儲存格修改）。
+--   必填：title（行程名稱）、start_at（開始時間，例如 2026-11-20 14:00:00+08）。
+--   status 只能填 預定／已完成／已取消；remind_minutes 填開始前幾分鐘提醒，留空為不提醒。
 -- =====================================================================
