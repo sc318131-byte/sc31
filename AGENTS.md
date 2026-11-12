@@ -17,6 +17,11 @@ The chairman schedule system is separate from the public repair demo and require
 - `supabase/cron.sql`: pg_cron job calling the function every 5 minutes, with URL and secret read from Vault. Replace its placeholders only in the SQL Editor, never in the committed file.
 - `文件/行程系統設定說明.md`: Traditional Chinese setup guide (LINE channel, accounts, secrets, deployment, troubleshooting).
 
+Both pages are installable PWAs:
+- `manifest-repair.webmanifest` (start `./`) and `manifest-schedule.webmanifest` (start `./schedule.html`) with distinct `id`s, so each installs as its own app. Icons are in `icons/` (192, 512, maskable 512, Apple 180).
+- `sw.js` (scope `./`): network-first for same-origin files, cache-first for the pinned jsDelivr libraries, and never caches Supabase traffic, so chairman schedule data is not stored on devices. Bump `CACHE_VERSION` when the precache list changes.
+- `pwa.js`: registers the service worker, shows the 「安裝 App」 button on `beforeinstallprompt`, and shows an add-to-home-screen tip on iOS.
+
 Planned deliverables include a submission form and report list, a Supabase table with access rules, an Excel field reference with sample data, a six-slide proposal, and a Word operating guide. When adding files, group application code, database scripts, documentation, and sample data into clearly named directories, and update this guide with their actual locations.
 
 ## Build, Test, and Development Commands

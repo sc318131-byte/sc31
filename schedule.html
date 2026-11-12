@@ -6,6 +6,14 @@
   <meta name="color-scheme" content="light dark">
   <meta name="robots" content="noindex, nofollow">
   <title>董事長行程</title>
+  <meta name="theme-color" content="#1f6f5c">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="董事長行程">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="manifest-schedule.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/schedule-192.png">
+  <link rel="apple-touch-icon" href="icons/schedule-apple-180.png">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="schedule.css">
 </head>
@@ -13,6 +21,10 @@
   <header class="site-header">
     <h1>董事長行程</h1>
     <p class="subtitle">登入後可查看與安排行程；開始前會用 LINE 提醒管理者。</p>
+    <div class="install">
+      <button id="install-btn" type="button" class="secondary" hidden>安裝 App</button>
+      <p id="install-tip" class="note" hidden></p>
+    </div>
   </header>
 
   <main>
@@ -132,5 +144,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/locales/zh-tw.global.min.js"></script>
   <script src="config.js"></script>
   <script src="schedule.js"></script>
+  <script src="pwa.js"></script>
 </body>
 </html>
