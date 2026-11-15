@@ -98,6 +98,68 @@
     };
   }
 
+  // ---- 行程表：列出日曆目前月份或週裡的行程 ----
+  const tableRows = $("event-rows");
+  const tableEl = $("event-table");
+  const tableEmpty = $("table-empty");
+  const tableTitle = $("table-title");
+  const tableCount = $("table-count");
+  const dayFmt = new Intl.DateTimeFormat("zh-TW", { month: "numeric", day: "numeric", weekday: "short" });
+
+  function cell(tag, text, className) {
+    const el = document.createElement(tag);
+    if (className) el.className = className;
+    el.textContent = text; // 一律用 textContent，避免資料被當成 HTML
+    return el;
+  }
+
+  function timeText(r) {
+    const start = new Date(r.start_at);
+    if (!r.end_at) return timeFmt.format(start);
+    const end = new Date(r.end_at);
+    return timeFmt.format(start) + "–" + (sameDay(start, end) ? timeFmt.format(end) : dayFmt.format(end) + " " + timeFmt.format(end));
+  }
+
+  function renderTable() {
+    const view = calendar.view;
+    // 月檢視會帶出前後月的幾天，表格只列本月（或本週）
+    const from = view.currentStart.getTime();
+    const to = view.currentEnd.getTime();
+    const rows = calendar.getEvents()
+      .map((e) => e.extendedProps.row)
+      .filter((r) => { const t = new Date(r.start_at).getTime(); return t >= from && t < to; })
+      .sort((a, b) => new Date(a.start_at) - new Date(b.start_at));
+
+    tableTitle.textContent = view.title + " 行程表";
+    tableCount.textContent = rows.length ? "共 " + rows.length + " 筆" : "";
+    tableRows.replaceChildren();
+    tableEl.hidden = rows.length === 0;
+    tableEmpty.hidden = rows.length !== 0;
+
+    rows.forEach((r) => {
+      const tr = document.createElement("tr");
+      if (r.status === "已取消") tr.className = "is-cancel";
+      const titleCell = document.createElement("td");
+      titleCell.className = "c-title";
+      // 行程名稱做成按鈕：可用鍵盤或點擊開啟詳細內容
+      const btn = cell("button", r.title, "row-link");
+      btn.type = "button";
+      btn.addEventListener("click", () => openDetail(r));
+      titleCell.append(btn);
+      const statusCell = document.createElement("td");
+      statusCell.className = "c-status";
+      statusCell.append(cell("span", r.status, "pill " + ({ "預定": "s-planned", "已完成": "s-done", "已取消": "s-cancel" }[r.status] || "")));
+      tr.append(
+        cell("td", dayFmt.format(new Date(r.start_at)), "c-date"),
+        cell("td", timeText(r), "c-time"),
+        titleCell,
+        cell("td", r.location || "—", r.location ? "c-loc" : "c-loc empty"),
+        statusCell
+      );
+      tableRows.append(tr);
+    });
+  }
+
   const calendar = new FullCalendar.Calendar($("calendar"), {
     locale: "zh-tw",
     timeZone: "local",
@@ -112,6 +174,9 @@
     eventTimeFormat: { hour: "2-digit", minute: "2-digit", hour12: false },
     noEventsContent: "這段期間沒有行程",
     eventClick: (info) => { info.jsEvent.preventDefault(); openDetail(info.event.extendedProps.row); },
+    // 載入完行程或切換月份／週時，更新下方的行程表
+    eventsSet: () => renderTable(),
+    datesSet: () => renderTable(),
     events: async (range, success, failure) => {
       refreshBtn.disabled = true;
       try {

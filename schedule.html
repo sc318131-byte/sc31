@@ -42,6 +42,29 @@
       </ul>
       <p class="note view-only">此頁只供查看。新增或修改行程請到 Supabase 後台操作。</p>
     </section>
+
+    <!-- 行程表：跟著日曆目前顯示的月份或週 -->
+    <section class="card" aria-labelledby="table-title">
+      <div class="list-head">
+        <h2 id="table-title">行程表</h2>
+        <span id="table-count" class="table-count"></span>
+      </div>
+      <div class="table-wrap">
+        <table id="event-table" class="event-table">
+          <thead>
+            <tr>
+              <th scope="col">日期</th>
+              <th scope="col">時間</th>
+              <th scope="col">行程</th>
+              <th scope="col">地點</th>
+              <th scope="col">狀態</th>
+            </tr>
+          </thead>
+          <tbody id="event-rows"></tbody>
+        </table>
+      </div>
+      <p id="table-empty" class="note table-empty" hidden>這段期間沒有行程。</p>
+    </section>
   </main>
 
   <!-- 行程詳細內容（唯讀） -->
