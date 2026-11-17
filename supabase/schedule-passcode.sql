@@ -189,7 +189,10 @@ begin
     note           = nullif(btrim(p_event->>'note'), ''),
     status         = coalesce(nullif(p_event->>'status', ''), '預定'),
     report         = nullif(btrim(p_event->>'report'), ''),
-    remind_minutes = (p_event->>'remind_minutes')::integer
+    -- 沒帶 remind_minutes 時保留原本的提醒設定
+    remind_minutes = case when p_event ? 'remind_minutes'
+                          then (p_event->>'remind_minutes')::integer
+                          else remind_minutes end
   where id = p_id;
 
   if not found then
