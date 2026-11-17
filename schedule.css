@@ -4,19 +4,44 @@
   --planned: #2f5aa8;
   --done: #4b7a5a;
   --cancel: #9ca3af;
+  --danger: #b42318;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --planned: #5b8def;
     --done: #86c79a;
     --cancel: #6b7280;
+    --danger: #f87171;
   }
 }
 
 main { max-width: 1000px; }
 .site-header, .site-footer { max-width: 1000px; }
 
-.view-only { margin: 8px 0 0; }
+.toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
+.toolbar button { min-height: 40px; padding: 8px 14px; }
+.unlock-state { margin: -4px 0 12px; color: var(--muted); font-size: 0.9rem; }
+.link-btn {
+  background: none; border: 0; padding: 0 2px; min-height: 0; color: var(--primary);
+  font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer;
+}
+
+/* 編輯表單 */
+input[type="password"], input[type="datetime-local"] {
+  width: 100%;
+  font: inherit;
+  font-size: 16px;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  min-height: 44px;
+}
+.check { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 0.95rem; }
+.check input { width: 20px; height: 20px; }
+button.danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+button.danger.confirm { background: var(--danger); color: #fff; }
 
 .site-footer a { color: inherit; }
 

@@ -20,7 +20,7 @@
 <body>
   <header class="site-header">
     <h1>董事長行程</h1>
-    <p class="subtitle">點行程可看詳細內容。行程開始前會用 LINE 提醒管理者。</p>
+    <p class="subtitle">點行程可看詳細內容。新增或修改需要輸入通行碼。行程開始前會用 LINE 提醒管理者。</p>
     <div class="install">
       <button id="install-btn" type="button" class="secondary" hidden>安裝 App</button>
       <p id="install-tip" class="note" hidden></p>
@@ -31,8 +31,14 @@
     <section id="calendar-view" class="card" aria-labelledby="cal-title">
       <div class="list-head">
         <h2 id="cal-title">行程日曆</h2>
-        <button id="refresh-btn" type="button" class="secondary">重新整理</button>
+        <div class="toolbar">
+          <button id="add-btn" type="button">新增行程</button>
+          <button id="refresh-btn" type="button" class="secondary">重新整理</button>
+        </div>
       </div>
+      <p id="unlock-state" class="unlock-state" hidden>
+        已解鎖編輯 <button id="lock-btn" type="button" class="link-btn">鎖定</button>
+      </p>
       <div id="cal-message" class="message" role="status" aria-live="polite" hidden></div>
       <div id="calendar"></div>
       <ul class="status-legend" aria-label="狀態圖例">
@@ -40,7 +46,6 @@
         <li><span class="swatch s-done"></span>已完成</li>
         <li><span class="swatch s-cancel"></span>已取消</li>
       </ul>
-      <p class="note view-only">此頁只供查看。新增或修改行程請到 Supabase 後台操作。</p>
     </section>
 
     <!-- 行程表：跟著日曆目前顯示的月份或週 -->
@@ -67,7 +72,7 @@
     </section>
   </main>
 
-  <!-- 行程詳細內容（唯讀） -->
+  <!-- 行程詳細內容 -->
   <dialog id="event-dialog" aria-labelledby="dialog-title">
     <div class="dialog-body">
       <h2 id="dialog-title"></h2>
@@ -79,10 +84,103 @@
         <dt>回報說明</dt><dd id="d-report"></dd>
       </dl>
       <div class="dialog-actions">
+        <button id="edit-btn" type="button" class="secondary">編輯</button>
         <span class="spacer"></span>
         <button id="close-btn" type="button">關閉</button>
       </div>
     </div>
+  </dialog>
+
+  <!-- 通行碼 -->
+  <dialog id="passcode-dialog" aria-labelledby="passcode-title">
+    <form id="passcode-form" class="dialog-body" novalidate>
+      <h2 id="passcode-title">輸入通行碼</h2>
+      <p class="note">新增、修改或刪除行程需要通行碼。通行碼由管理者提供。</p>
+      <div class="field">
+        <label for="passcode-input">通行碼</label>
+        <input id="passcode-input" name="passcode" type="password" required autocomplete="current-password">
+      </div>
+      <label class="check">
+        <input id="passcode-remember" type="checkbox"> 在這台裝置記住通行碼
+      </label>
+      <div id="passcode-message" class="message" role="status" aria-live="polite" hidden></div>
+      <div class="dialog-actions">
+        <span class="spacer"></span>
+        <button id="passcode-cancel" type="button" class="secondary">取消</button>
+        <button id="passcode-submit" type="submit">確認</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- 新增／編輯行程 -->
+  <dialog id="edit-dialog" aria-labelledby="edit-title">
+    <form id="edit-form" class="dialog-body" novalidate>
+      <h2 id="edit-title">新增行程</h2>
+
+      <div class="field">
+        <label for="ev-title">行程名稱 <span class="req" aria-hidden="true">*</span></label>
+        <input id="ev-title" name="title" type="text" required maxlength="100" placeholder="例：拜訪示範公司">
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="ev-start">開始 <span class="req" aria-hidden="true">*</span></label>
+          <input id="ev-start" name="start_at" type="datetime-local" required>
+        </div>
+        <div class="field">
+          <label for="ev-end">結束</label>
+          <input id="ev-end" name="end_at" type="datetime-local">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="ev-location">地點</label>
+        <input id="ev-location" name="location" type="text" maxlength="100" placeholder="例：台中總公司 5F 會議室">
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="ev-remind">LINE 提醒</label>
+          <select id="ev-remind" name="remind_minutes">
+            <option value="">不提醒</option>
+            <option value="0">開始時</option>
+            <option value="10">10 分鐘前</option>
+            <option value="30" selected>30 分鐘前</option>
+            <option value="60">1 小時前</option>
+            <option value="120">2 小時前</option>
+            <option value="1440">1 天前</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="ev-status">狀態</label>
+          <select id="ev-status" name="status">
+            <option value="預定" selected>預定</option>
+            <option value="已完成">已完成</option>
+            <option value="已取消">已取消</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="ev-note">備註</label>
+        <textarea id="ev-note" name="note" rows="3" maxlength="1000"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="ev-report">回報說明</label>
+        <textarea id="ev-report" name="report" rows="3" maxlength="1000" placeholder="行程結束後填寫結果，例如：已完成，簽約延到下週"></textarea>
+      </div>
+
+      <p class="note">行程會公開顯示，不能公開的內容請勿填寫。</p>
+      <div id="edit-message" class="message" role="status" aria-live="polite" hidden></div>
+
+      <div class="dialog-actions">
+        <button id="delete-btn" type="button" class="danger" hidden>刪除</button>
+        <span class="spacer"></span>
+        <button id="edit-cancel" type="button" class="secondary">取消</button>
+        <button id="save-btn" type="submit">儲存</button>
+      </div>
+    </form>
   </dialog>
 
   <footer class="site-footer"><a href="./">報修登記</a>・董事長行程</footer>
