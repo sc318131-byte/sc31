@@ -77,6 +77,11 @@ type LineEvent = {
   message?: { type?: string; text?: string };
 };
 
+// 統一全形／半形並去掉前後空白，避免手機全形輸入或 secret 多了換行就比對失敗
+function normalize(text: string): string {
+  return text.normalize("NFKC").trim();
+}
+
 // 「綁定 碼」或「綁定碼」都接受，全形空白也可以
 const BIND_PATTERN = /^綁定[\s　]*(.+)$/;
 
@@ -90,7 +95,7 @@ Deno.serve(async (req) => {
       return new Response("Invalid signature", { status: 401 });
     }
 
-    const bindCode = env("LINE_BIND_CODE");
+    const bindCode = normalize(env("LINE_BIND_CODE"));
     if (bindCode.length < 8) throw new Error("LINE_BIND_CODE 至少要 8 個字元");
     const lineToken = env("LINE_CHANNEL_ACCESS_TOKEN");
     const events: LineEvent[] = (JSON.parse(body).events ?? []);
@@ -100,11 +105,13 @@ Deno.serve(async (req) => {
       if (e.type !== "message" || e.message?.type !== "text") continue;
       if (e.source?.type !== "user" || !e.source.userId || !e.replyToken) continue;
 
-      const match = (e.message.text ?? "").trim().match(BIND_PATTERN);
+      const match = normalize(e.message.text ?? "").match(BIND_PATTERN);
       if (!match) continue; // 不是綁定指令：不回應，交給官方帳號原本的設定
 
-      if (!safeEqual(match[1].trim(), bindCode)) {
-        console.warn("綁定碼錯誤", e.source.userId.slice(0, 5) + "…");
+      const typed = normalize(match[1]);
+      if (!safeEqual(typed, bindCode)) {
+        // 只記錄長度，不記錄內容，方便判斷是打錯字還是 secret 多了字元
+        console.warn(`綁定碼錯誤：輸入 ${typed.length} 個字元，設定值 ${bindCode.length} 個字元`, e.source.userId.slice(0, 5) + "…");
         await reply(lineToken, e.replyToken, "綁定碼不正確，請向系統管理者確認後再試。");
         continue;
       }
