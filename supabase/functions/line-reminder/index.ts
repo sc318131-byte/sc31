@@ -8,7 +8,8 @@
 //
 // 需要在 Supabase 設定的 secrets（supabase secrets set …）：
 //   LINE_CHANNEL_ACCESS_TOKEN  LINE Messaging API 的 Channel access token
-//   LINE_ADMIN_USER_ID         接收通知的管理者 LINE userId（U 開頭 33 碼）
+//   LINE_ADMIN_USER_ID         （選填）接收通知的管理者 LINE userId（U 開頭 33 碼）
+//                              管理者用 line-webhook 綁定後，會優先使用綁定的 userId
 //   CRON_SECRET                排程呼叫時帶的密碼，防止外人觸發
 // SUPABASE_URL、SUPABASE_SERVICE_ROLE_KEY 由 Supabase 自動提供。
 
@@ -107,10 +108,15 @@ Deno.serve(async (req) => {
     if (!safeEqual(secret, env("CRON_SECRET"))) return new Response("Unauthorized", { status: 401 });
 
     const lineToken = env("LINE_CHANNEL_ACCESS_TOKEN");
-    const adminId = env("LINE_ADMIN_USER_ID");
     const db = createClient(env("SUPABASE_URL"), env("SUPABASE_SERVICE_ROLE_KEY"), {
       auth: { persistSession: false, autoRefreshToken: false },
     });
+
+    // 接收者：先用 line-webhook 綁定的管理者，沒有綁定才用 secret LINE_ADMIN_USER_ID
+    const { data: boundId, error: adminErr } = await db.rpc("line_get_admin");
+    if (adminErr) console.warn("讀取綁定的管理者失敗（可能尚未執行 supabase/line-admin.sql）：", adminErr.message);
+    const adminId = (typeof boundId === "string" && boundId) || Deno.env.get("LINE_ADMIN_USER_ID") || "";
+    if (!adminId) throw new Error("尚未設定接收者：請管理者傳「綁定 <綁定碼>」給官方帳號，或設定 LINE_ADMIN_USER_ID");
 
     const now = Date.now();
     // 先抓「開始時間在 7 天內、還沒開始太久」的候選，再在程式裡精確判斷提醒時間
