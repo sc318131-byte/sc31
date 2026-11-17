@@ -2,9 +2,10 @@
 -- 董事長行程系統：Supabase 建表 SQL
 -- 資料表：public.chairman_events
 --
--- 用途：任何人打開日曆網頁就能查看董事長行程（不用登入），
---       但網頁上不能新增、修改、刪除。行程由管理者在 Supabase 後台的
---       Table Editor 維護（後台使用資料表擁有者身分，不受下方限制）。
+-- 用途：任何人打開日曆網頁就能查看董事長行程（不用登入）。
+--       網頁不能直接寫入這張表；要在網頁上新增、修改、刪除，接著執行
+--       supabase/schedule-passcode.sql（以共用通行碼保護的寫入函式）。
+--       也可以在 Supabase 後台的 Table Editor 維護（後台不受下方限制）。
 --       行程開始前，由排程（supabase/cron.sql）呼叫 Edge Function
 --       line-reminder，用 LINE 通知管理者。
 --

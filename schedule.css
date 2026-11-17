@@ -4,19 +4,44 @@
   --planned: #2f5aa8;
   --done: #4b7a5a;
   --cancel: #9ca3af;
+  --danger: #b42318;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --planned: #5b8def;
     --done: #86c79a;
     --cancel: #6b7280;
+    --danger: #f87171;
   }
 }
 
 main { max-width: 1000px; }
 .site-header, .site-footer { max-width: 1000px; }
 
-.view-only { margin: 8px 0 0; }
+.toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
+.toolbar button { min-height: 40px; padding: 8px 14px; }
+.unlock-state { margin: -4px 0 12px; color: var(--muted); font-size: 0.9rem; }
+.link-btn {
+  background: none; border: 0; padding: 0 2px; min-height: 0; color: var(--primary);
+  font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer;
+}
+
+/* 編輯表單 */
+input[type="password"], input[type="datetime-local"] {
+  width: 100%;
+  font: inherit;
+  font-size: 16px;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  min-height: 44px;
+}
+.check { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 0.95rem; }
+.check input { width: 20px; height: 20px; }
+button.danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+button.danger.confirm { background: var(--danger); color: #fff; }
 
 .site-footer a { color: inherit; }
 
@@ -59,6 +84,57 @@ main { max-width: 1000px; }
 .s-planned { background: var(--planned); }
 .s-done { background: var(--done); }
 .s-cancel { background: var(--cancel); }
+
+/* ---- 行程表 ---- */
+.table-count { color: var(--muted); font-size: 0.9rem; white-space: nowrap; }
+.table-wrap { overflow-x: auto; }
+.event-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+.event-table th {
+  text-align: left; font-weight: 600; color: var(--muted); font-size: 0.85rem;
+  padding: 8px 10px; border-bottom: 2px solid var(--border); white-space: nowrap;
+}
+.event-table td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.event-table tbody tr:last-child td { border-bottom: 0; }
+.event-table .c-date, .event-table .c-time { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.event-table .c-title { min-width: 10em; }
+.event-table .c-loc { overflow-wrap: anywhere; }
+.event-table .empty { color: var(--muted); }
+.event-table tr.is-cancel .row-link { text-decoration: line-through; color: var(--muted); }
+.row-link {
+  all: unset; cursor: pointer; color: var(--primary); font-weight: 600;
+  overflow-wrap: anywhere; border-radius: 4px;
+}
+.row-link:hover { text-decoration: underline; }
+.row-link:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.pill {
+  display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 0.8rem;
+  font-weight: 600; color: #fff; white-space: nowrap;
+}
+.pill.s-cancel { color: var(--text); }
+.table-empty { margin: 0; }
+/* 沒有行程時整個表格隱藏（下方手機版會把 table 設成 block，所以要明確覆寫） */
+.event-table[hidden] { display: none; }
+
+/* 手機：每筆行程改成上下排列的小卡，不需要左右捲動 */
+@media (max-width: 559px) {
+  .event-table thead { display: none; }
+  .event-table, .event-table tbody { display: block; }
+  .event-table tr {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 2px 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .event-table tbody tr:last-child { border-bottom: 0; }
+  .event-table td { display: block; padding: 0; border: 0; min-width: 0; }
+  .event-table .c-date { grid-column: 1; grid-row: 1; font-weight: 600; }
+  .event-table .c-time { grid-column: 2; grid-row: 1; color: var(--muted); white-space: normal; }
+  .event-table .c-status { grid-column: 3; grid-row: 1; justify-self: end; }
+  .event-table .c-title { grid-column: 1 / -1; min-width: 0; }
+  .event-table .c-loc { grid-column: 1 / -1; color: var(--muted); font-size: 0.88rem; }
+  .event-table .c-loc.empty { display: none; }
+}
 
 /* ---- 對話框 ---- */
 dialog {
