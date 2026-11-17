@@ -123,14 +123,14 @@ create trigger chairman_events_before_write
 --
 -- 這個 Supabase 專案不會自動開放新資料表，所以要明確授權。
 -- anon（未登入的訪客）：只能讀取日曆需要的欄位，不給新增、修改、刪除。
---   提醒設定（remind_minutes、reminded_at）與建立時間不對外開放。
+--   remind_minutes（提前幾分鐘提醒）供編輯畫面顯示；reminded_at 與建立時間不對外開放。
 -- authenticated：本系統不使用登入，不給任何權限。
 -- service_role（Edge Function 用）：讀取行程、寫入 reminded_at。
 --   service_role 會略過 RLS，金鑰只存在 Supabase 伺服器端，絕對不能放進前端。
 -- ---------------------------------------------------------------------
 revoke all on table public.chairman_events from public, anon, authenticated;
 
-grant select (id, title, start_at, end_at, location, note, status, report)
+grant select (id, title, start_at, end_at, location, note, status, report, remind_minutes)
   on table public.chairman_events to anon;
 
 grant select on table public.chairman_events to service_role;

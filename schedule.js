@@ -7,7 +7,10 @@
 
   const TABLE = "chairman_events";
   // 只讀這些欄位；資料庫也只開放這些欄位給未登入的訪客
-  const COLUMNS = "id, title, start_at, end_at, location, note, status, report, remind_minutes";
+  const BASE_COLUMNS = "id, title, start_at, end_at, location, note, status, report";
+  // remind_minutes 要在資料庫執行過 schedule-passcode.sql（或新版 schedule.sql）才讀得到；
+  // 讀不到時改用基本欄位，日曆照樣顯示，不會整頁載入失敗。
+  let readColumns = BASE_COLUMNS + ", remind_minutes";
   const STATUSES = ["預定", "已完成", "已取消"];
   const STATUS_COLOR = { "預定": "--planned", "已完成": "--done", "已取消": "--cancel" };
   const $ = (id) => document.getElementById(id);
@@ -40,9 +43,10 @@
     if (!error) return "發生未知錯誤，請稍後再試。";
     const code = error.code || "";
     const msg = error.message || "";
-    if (code === "42501" || /permission denied/i.test(msg)) return "沒有讀取權限，請先在 Supabase 執行 supabase/schedule.sql。";
-    if (code === "42P01" || /does not exist|schema cache/i.test(msg)) return "找不到行程資料表，請先在 Supabase 執行 supabase/schedule.sql。";
-    if (code === "42883" || /Could not find the function/i.test(msg)) return "資料庫還沒加入編輯功能，請先在 Supabase 執行 supabase/schedule-passcode.sql。";
+    // 先判斷「函式不存在」：PostgREST 的訊息也含 schema cache，放後面會被誤判成找不到資料表
+    if (code === "PGRST202" || code === "42883" || /Could not find the function/i.test(msg)) return "資料庫還沒加入編輯功能，請先在 Supabase 執行 supabase/schedule-passcode.sql。";
+    if (code === "PGRST205" || code === "42P01" || /Could not find the table|relation .* does not exist/i.test(msg)) return "找不到行程資料表，請先在 Supabase 執行 supabase/schedule.sql。";
+    if (code === "42501" || /permission denied/i.test(msg)) return "沒有權限，請確認已在 Supabase 執行 supabase/schedule-public-read.sql（或 schedule.sql）與 schedule-passcode.sql。";
     if (code === "23514") return "資料不符合規定（字數、時間順序或選項），請檢查後再試。";
     if (/Failed to fetch|NetworkError|Load failed/i.test(msg)) return "無法連線到伺服器，請檢查網路後再試。";
     return "發生錯誤：" + msg;
@@ -204,8 +208,15 @@
       $("ev-start").value = toLocalInput(row.start_at);
       $("ev-end").value = toLocalInput(row.end_at);
       $("ev-location").value = row.location || "";
-      const remind = row.remind_minutes == null ? "" : String(row.remind_minutes);
-      if (remind && !Array.from($("ev-remind").options).some((o) => o.value === remind)) {
+      // 讀不到提醒設定時（undefined），儲存時不送這個欄位，保留資料庫原本的值
+      let remind = row.remind_minutes == null ? "" : String(row.remind_minutes);
+      if (row.remind_minutes === undefined) {
+        // 讀不到提醒設定：預設「維持原設定」，儲存時不送這個欄位
+        const keep = new Option("維持原設定", "keep");
+        keep.dataset.custom = "1";
+        $("ev-remind").add(keep, 0);
+        remind = "keep";
+      } else if (remind && !Array.from($("ev-remind").options).some((o) => o.value === remind)) {
         const opt = new Option(remind + " 分鐘前", remind);
         opt.dataset.custom = "1";
         $("ev-remind").add(opt);
@@ -241,6 +252,7 @@
       status: $("ev-status").value,
       remind_minutes: $("ev-remind").value === "" ? null : Number($("ev-remind").value),
     };
+    if ($("ev-remind").value === "keep") delete data.remind_minutes; // 保留資料庫原本的提醒設定
     const problems = [];
     if (!data.title) problems.push("請填寫「行程名稱」");
     if (!data.start_at) problems.push("請選擇「開始」時間");
@@ -421,13 +433,19 @@
     events: async (range, success, failure) => {
       refreshBtn.disabled = true;
       try {
-        const { data, error } = await client
+        const query = (columns) => client
           .from(TABLE)
-          .select(COLUMNS)
+          .select(columns)
           .gte("start_at", range.start.toISOString())
           .lt("start_at", range.end.toISOString())
           .order("start_at", { ascending: true })
           .limit(1000);
+        let { data, error } = await query(readColumns);
+        if (error && error.code === "42501" && readColumns !== BASE_COLUMNS) {
+          // 還不能讀 remind_minutes：改用基本欄位重試
+          readColumns = BASE_COLUMNS;
+          ({ data, error } = await query(readColumns));
+        }
         if (error) {
           showMessage(calMsg, "err", "行程載入失敗：" + explainError(error));
           failure(error);

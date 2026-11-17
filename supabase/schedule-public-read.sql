@@ -25,7 +25,7 @@ drop table if exists public.schedule_editors;
 -- 二、重新設定權限：anon 只能讀取部分欄位，authenticated 不給任何權限
 revoke all on table public.chairman_events from public, anon, authenticated;
 
-grant select (id, title, start_at, end_at, location, note, status, report)
+grant select (id, title, start_at, end_at, location, note, status, report, remind_minutes)
   on table public.chairman_events to anon;
 
 -- service_role（Edge Function 用）維持不變：讀取行程、寫入 reminded_at
