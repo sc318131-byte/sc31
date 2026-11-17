@@ -18,8 +18,9 @@
 //   LINE_BIND_CODE             自訂的綁定碼，至少 8 個字元
 // SUPABASE_URL、SUPABASE_SERVICE_ROLE_KEY 由 Supabase 自動提供。
 // 部署時要關閉 Verify JWT（LINE 不會帶 Supabase 的登入權杖）。
-
-import { createClient } from "npm:@supabase/supabase-js@2.45.4";
+//
+// 不載入 supabase-js：LINE 只等幾秒，冷啟動時載入大型套件會讓 Verify 逾時，
+// 所以直接用 fetch 呼叫資料庫的 RPC。
 
 const LINE_REPLY_URL = "https://api.line.me/v2/bot/message/reply";
 const enc = new TextEncoder();
@@ -55,6 +56,18 @@ async function reply(token: string, replyToken: string, text: string): Promise<v
     body: JSON.stringify({ replyToken, messages: [{ type: "text", text }] }),
   });
   if (!res.ok) console.error(`LINE 回覆失敗 ${res.status}: ${(await res.text()).slice(0, 300)}`);
+}
+
+// 呼叫資料庫函式 line_set_admin（以 service_role 身分）；成功回傳 null，失敗回傳錯誤說明
+async function saveAdmin(userId: string): Promise<string | null> {
+  const key = env("SUPABASE_SERVICE_ROLE_KEY");
+  const res = await fetch(`${env("SUPABASE_URL")}/rest/v1/rpc/line_set_admin`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", apikey: key, Authorization: `Bearer ${key}` },
+    body: JSON.stringify({ p_user_id: userId }),
+  });
+  if (res.ok) return null;
+  return `${res.status} ${(await res.text()).slice(0, 300)}`;
 }
 
 type LineEvent = {
@@ -96,10 +109,7 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const db = createClient(env("SUPABASE_URL"), env("SUPABASE_SERVICE_ROLE_KEY"), {
-        auth: { persistSession: false, autoRefreshToken: false },
-      });
-      const { error } = await db.rpc("line_set_admin", { p_user_id: e.source.userId });
+      const error = await saveAdmin(e.source.userId);
       if (error) {
         console.error("儲存管理者失敗", error);
         await reply(lineToken, e.replyToken, "綁定失敗，請稍後再試，或請系統管理者確認已執行 supabase/line-admin.sql。");
