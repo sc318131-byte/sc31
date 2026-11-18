@@ -46,11 +46,25 @@ as $$
   select user_id from private.line_admin where id;
 $$;
 
+-- 讀取排程密碼（supabase/cron.sql 存在 Vault 的 line_reminder_cron_secret）
+-- line-reminder 用它驗證呼叫者，不用再把同一組密碼複製到 Edge Function secrets。
+create or replace function public.line_cron_secret()
+returns text
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select decrypted_secret from vault.decrypted_secrets where name = 'line_reminder_cron_secret';
+$$;
+
 -- 網頁與未登入的訪客都不能呼叫，只有 service_role 可以
 revoke all on function public.line_set_admin(text) from public, anon, authenticated;
 revoke all on function public.line_get_admin()     from public, anon, authenticated;
+revoke all on function public.line_cron_secret()   from public, anon, authenticated;
 grant execute on function public.line_set_admin(text) to service_role;
 grant execute on function public.line_get_admin()     to service_role;
+grant execute on function public.line_cron_secret()   to service_role;
 
 commit;
 
