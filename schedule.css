@@ -1,165 +1,29 @@
-/* 董事長行程：沿用 style.css 的色彩變數，只補日曆、對話框與狀態顏色 */
-
+/* ===== 暖灰色系（試用）：想還原就把這整段刪掉 ===== */
 :root {
-  --planned: #2f5aa8;
-  --done: #4b7a5a;
-  --cancel: #9ca3af;
-  --danger: #b42318;
+  --bg: #F3F1EC;
+  --card: #FBFAF8;
+  --text: #3B3A36;
+  --muted: #6E6E66;
+  --border: #DDD8CF;
+  --primary: #6E6E66;
+  --primary-text: #FFFFFF;
+  --focus: #8C8478;
+  --planned: #946250;
+  --done: #5F6B52;
+  --cancel: #A09B94;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --planned: #5b8def;
-    --done: #86c79a;
-    --cancel: #6b7280;
-    --danger: #f87171;
+    --bg: #2B2A27;
+    --card: #363531;
+    --text: #ECE9E3;
+    --muted: #A09B94;
+    --border: #4B4944;
+    --primary: #C5BFB6;
+    --primary-text: #2B2A27;
+    --focus: #C5BFB6;
+    --planned: #B27A63;
+    --done: #8A9A78;
+    --cancel: #6E6A64;
   }
 }
-
-main { max-width: 1000px; }
-.site-header, .site-footer { max-width: 1000px; }
-
-.toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
-.toolbar button { min-height: 40px; padding: 8px 14px; }
-.unlock-state { margin: -4px 0 12px; color: var(--muted); font-size: 0.9rem; }
-.link-btn {
-  background: none; border: 0; padding: 0 2px; min-height: 0; color: var(--primary);
-  font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer;
-}
-
-/* 編輯表單 */
-input[type="password"], input[type="datetime-local"] {
-  width: 100%;
-  font: inherit;
-  font-size: 16px;
-  color: var(--text);
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 12px;
-  min-height: 44px;
-}
-.check { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 0.95rem; }
-.check input { width: 20px; height: 20px; }
-button.danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
-button.danger.confirm { background: var(--danger); color: #fff; }
-
-.site-footer a { color: inherit; }
-
-/* ---- FullCalendar 配色跟著主題 ---- */
-#calendar {
-  --fc-border-color: var(--border);
-  --fc-page-bg-color: var(--card);
-  --fc-neutral-bg-color: var(--bg);
-  --fc-list-event-hover-bg-color: var(--bg);
-  --fc-today-bg-color: color-mix(in srgb, var(--primary) 12%, transparent);
-  --fc-button-bg-color: var(--card);
-  --fc-button-border-color: var(--border);
-  --fc-button-text-color: var(--text);
-  --fc-button-hover-bg-color: var(--bg);
-  --fc-button-hover-border-color: var(--border);
-  --fc-button-active-bg-color: var(--primary);
-  --fc-button-active-border-color: var(--primary);
-  --fc-event-text-color: #fff;
-  font-size: 0.92rem;
-}
-#calendar .fc-button { min-height: 40px; font-weight: 600; box-shadow: none; }
-#calendar .fc-button-active { color: var(--primary-text); }
-#calendar .fc-toolbar-title { font-size: 1.15rem; }
-#calendar .fc-event { cursor: pointer; }
-#calendar .fc-col-header-cell-cushion,
-#calendar .fc-daygrid-day-number,
-#calendar .fc-list-day-text,
-#calendar .fc-list-day-side-text { color: var(--text); text-decoration: none; }
-#calendar .fc-list-event-title, #calendar .fc-list-event-time { color: var(--text); }
-#calendar .ev-cancel .fc-event-title, #calendar .ev-cancel .fc-list-event-title { text-decoration: line-through; }
-
-@media (max-width: 559px) {
-  #calendar .fc-header-toolbar { flex-direction: column; gap: 8px; align-items: stretch; }
-  #calendar .fc-toolbar-chunk { display: flex; justify-content: center; }
-}
-
-.status-legend { display: flex; gap: 16px; list-style: none; padding: 0; margin: 12px 0 0; color: var(--muted); font-size: 0.85rem; }
-.status-legend li { display: inline-flex; align-items: center; gap: 6px; }
-.swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
-.s-planned { background: var(--planned); }
-.s-done { background: var(--done); }
-.s-cancel { background: var(--cancel); }
-
-/* ---- 行程表 ---- */
-.table-count { color: var(--muted); font-size: 0.9rem; white-space: nowrap; }
-.table-wrap { overflow-x: auto; }
-.event-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
-.event-table th {
-  text-align: left; font-weight: 600; color: var(--muted); font-size: 0.85rem;
-  padding: 8px 10px; border-bottom: 2px solid var(--border); white-space: nowrap;
-}
-.event-table td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
-.event-table tbody tr:last-child td { border-bottom: 0; }
-.event-table .c-date, .event-table .c-time { white-space: nowrap; font-variant-numeric: tabular-nums; }
-.event-table .c-title { min-width: 10em; }
-.event-table .c-loc { overflow-wrap: anywhere; }
-.event-table .empty { color: var(--muted); }
-.event-table tr.is-cancel .row-link { text-decoration: line-through; color: var(--muted); }
-.row-link {
-  all: unset; cursor: pointer; color: var(--primary); font-weight: 600;
-  overflow-wrap: anywhere; border-radius: 4px;
-}
-.row-link:hover { text-decoration: underline; }
-.row-link:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-.pill {
-  display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 0.8rem;
-  font-weight: 600; color: #fff; white-space: nowrap;
-}
-.pill.s-cancel { color: var(--text); }
-.table-empty { margin: 0; }
-/* 沒有行程時整個表格隱藏（下方手機版會把 table 設成 block，所以要明確覆寫） */
-.event-table[hidden] { display: none; }
-
-/* 手機：每筆行程改成上下排列的小卡，不需要左右捲動 */
-@media (max-width: 559px) {
-  .event-table thead { display: none; }
-  .event-table, .event-table tbody { display: block; }
-  .event-table tr {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    gap: 2px 10px;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .event-table tbody tr:last-child { border-bottom: 0; }
-  .event-table td { display: block; padding: 0; border: 0; min-width: 0; }
-  .event-table .c-date { grid-column: 1; grid-row: 1; font-weight: 600; }
-  .event-table .c-time { grid-column: 2; grid-row: 1; color: var(--muted); white-space: normal; }
-  .event-table .c-status { grid-column: 3; grid-row: 1; justify-self: end; }
-  .event-table .c-title { grid-column: 1 / -1; min-width: 0; }
-  .event-table .c-loc { grid-column: 1 / -1; color: var(--muted); font-size: 0.88rem; }
-  .event-table .c-loc.empty { display: none; }
-}
-
-/* ---- 對話框 ---- */
-dialog {
-  width: min(560px, calc(100vw - 24px));
-  max-height: calc(100dvh - 24px);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0;
-  background: var(--card);
-  color: var(--text);
-}
-dialog::backdrop { background: rgb(0 0 0 / 0.45); }
-.dialog-body { padding: 18px; }
-.dialog-body h2 { margin: 0 0 12px; font-size: 1.2rem; overflow-wrap: anywhere; }
-
-/* 詳細內容：標籤在左、內容在右；手機改上下排列 */
-.detail { display: grid; grid-template-columns: 5.5em minmax(0, 1fr); gap: 10px 12px; margin: 0 0 16px; }
-.detail dt { color: var(--muted); font-weight: 600; }
-.detail dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
-.detail dd.empty { color: var(--muted); }
-@media (max-width: 400px) {
-  .detail { grid-template-columns: minmax(0, 1fr); gap: 2px; }
-  .detail dd { margin-bottom: 10px; }
-}
-/* 按鈕列固定在對話框底部；bottom 抵銷表單的下內距，下內距補回讓按鈕完整露出 */
-.dialog-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; position: sticky; bottom: -18px; background: var(--card); padding: 12px 0 18px; margin-bottom: -18px; border-top: 1px solid var(--border); }
-.dialog-actions .spacer { flex: 1; }
-.dialog-actions button { min-width: 88px; }
