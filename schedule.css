@@ -37,5 +37,12 @@
 換成這兩行
 <meta name="theme-color" content="#94625F" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#2D2625" media="(prefers-color-scheme: dark)">
+請在 sc31 專案的 schedule.css 最後面，加上下面這段，不要動其他檔案，改好後提交到 main：
+
+/* 日曆標題（例如「2026年11月」）縮小 */
+#calendar .fc-toolbar-title {
+  font-size: 1.2rem !important;
+  font-weight: 600;
+}
 
 改好後直接提交到 main 分支。
