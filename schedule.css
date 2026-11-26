@@ -1,29 +1,41 @@
-/* ===== 暖灰色系（試用）：想還原就把這整段刪掉 ===== */
+請幫我修改 sc31 專案的行程頁面顏色，只改這兩個檔案，不要動 schedule.js、config.js、style.css。
+
+1. schedule.css：如果最後面有「暖灰色系（試用）」那一段，請整段刪掉。然後在檔案最後面加上下面這一段：
+
+/* ===== 灰粉色系（試用）：想還原就把這整段刪掉 ===== */
 :root {
-  --bg: #F3F1EC;
-  --card: #FBFAF8;
-  --text: #3B3A36;
-  --muted: #6E6E66;
-  --border: #DDD8CF;
-  --primary: #6E6E66;
+  --bg: #F6F0EF;
+  --card: #FFFCFB;
+  --text: #3D3433;
+  --muted: #7A6967;
+  --border: #E6D5D2;
+  --primary: #94625F;
   --primary-text: #FFFFFF;
-  --focus: #8C8478;
-  --planned: #946250;
+  --focus: #C49A9A;
+  --planned: #9A5A62;
   --done: #5F6B52;
-  --cancel: #A09B94;
+  --cancel: #B3A5A2;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #2B2A27;
-    --card: #363531;
-    --text: #ECE9E3;
-    --muted: #A09B94;
-    --border: #4B4944;
-    --primary: #C5BFB6;
-    --primary-text: #2B2A27;
-    --focus: #C5BFB6;
-    --planned: #B27A63;
+    --bg: #2D2625;
+    --card: #3A3130;
+    --text: #F1E7E5;
+    --muted: #B8A5A2;
+    --border: #55484A;
+    --primary: #D2B1AC;
+    --primary-text: #2D2625;
+    --focus: #D2B1AC;
+    --planned: #A8606A;
     --done: #8A9A78;
-    --cancel: #6E6A64;
+    --cancel: #6F6260;
   }
 }
+
+2. schedule.html：把這一行
+<meta name="theme-color" content="#1f6f5c">
+換成這兩行
+<meta name="theme-color" content="#94625F" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#2D2625" media="(prefers-color-scheme: dark)">
+
+改好後直接提交到 main 分支。
